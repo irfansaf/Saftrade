@@ -3,7 +3,8 @@ import pandas_ta as ta
 from typing import Dict, Any
 from config.settings import (
     RSI_OVERSOLD, VOLUME_SPIKE_FACTOR, EMA_LONG, EMA_MEDIUM, EMA_SHORT,
-    VOL_BREAKOUT_FACTOR, MIN_PRICE_CHANGE
+    VOL_BREAKOUT_FACTOR, MIN_PRICE_CHANGE,
+    BSJP_CLOSE_THRESHOLD, BSJP_MIN_VOLUME
 )
 
 class TechnicalAnalyzer:
@@ -74,21 +75,44 @@ class TechnicalAnalyzer:
         
         is_volatility_breakout = is_breakout_vol and is_strong_move and is_green
 
+        # --- NEW: BSJP (Beli Sore Jual Pagi) ---
+        # Logic:
+        # 1. Close > Open (Green Candle)
+        # 2. Strong Close: Close is in the top 10% of the day's range
+        # 3. Volume > Average
+        
+        day_range = latest['high'] - latest['low']
+        if day_range > 0:
+            strong_close_ratio = (latest['close'] - latest['low']) / day_range
+            is_strong_close = strong_close_ratio >= BSJP_CLOSE_THRESHOLD
+        else:
+            is_strong_close = False # Doji or Flat
+            
+        is_uptrend_short = latest['close'] > latest['ema_20'] if latest['ema_20'] > 0 else False
+        is_volume_ok = latest['volume'] > (latest['vol_avg'] * BSJP_MIN_VOLUME)
+        
+        is_bsjp = is_green and is_strong_close and is_volume_ok and is_uptrend_short
+
         # --- Final Decision ---
-        # Swing Setup OR Breakout Setup
+        # Swing Setup OR Breakout Setup OR BSJP
         is_swing_setup = is_uptrend and momentum_signal and is_volume_spike
         
-        is_valid_setup = is_swing_setup or is_volatility_breakout
+        is_valid_setup = is_swing_setup or is_volatility_breakout or is_bsjp
         
         reason = []
         if not is_swing_setup: 
             reason.append("Not Swing Setup")
         if not is_volatility_breakout:
             reason.append("Not Volatility Breakout")
+        if not is_bsjp:
+            reason.append("Not BSJP")
 
         # Determine Signal Type
         signal_type = "None"
-        if is_volatility_breakout:
+        if is_bsjp:
+            signal_type = "BSJP (Overnight Gap)"
+            if is_volatility_breakout: signal_type += " + Breakout"
+        elif is_volatility_breakout:
             signal_type = "Volatility Breakout"
             if is_swing_setup: signal_type += " + Swing"
         elif is_swing_setup:
@@ -112,7 +136,8 @@ class TechnicalAnalyzer:
                 "rsi_bounce": bool(rsi_bounce),
                 "golden_cross": bool(golden_cross),
                 "volume_spike": bool(is_volume_spike),
-                "vol_breakout": bool(is_volatility_breakout)
+                "vol_breakout": bool(is_volatility_breakout),
+                "bsjp": bool(is_bsjp)
             },
             "reason": "; ".join(reason) if not is_valid_setup else f"Valid: {signal_type}"
         }

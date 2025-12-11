@@ -18,6 +18,7 @@
 - **Dual Strategy Engine** ⚔️
   - **Trend Swing**: Catches safe, uptrending stocks (Price > EMA200 + RSI Bounce).
   - **Gorengan Mode (Volatility Breakout)**: Hunts for high-risk, high-reward spikes (Volume > 2x Avg, Price > 3%) with "Falling Knife" protection.
+  - **BSJP (Breakout Swing Play)**: Hunts for high-risk, high-reward spikes (Volume > 2x Avg, Price > 3%) with "Falling Knife" protection.
 - **AI Analyst Core** 🧠
   - Every technical signal is reviewed by a "Senior Hedge Fund Analyst" persona (DeepSeek AI).
   - Rejects overbought "traps" or "manipulation" patterns.

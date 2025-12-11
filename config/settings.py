@@ -37,3 +37,7 @@ EMA_SHORT = 20
 VOL_BREAKOUT_FACTOR = 2.0 # 2x Average Volume
 MIN_PRICE_CHANGE = 0.03   # 3% Price Increase
 
+# BSJP Constants
+BSJP_CLOSE_THRESHOLD = 0.90 # Close must be in top 10% of candle range
+BSJP_MIN_VOLUME = 1.0       # Volume > 1.0x Average
+

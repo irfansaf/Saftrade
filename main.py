@@ -31,7 +31,7 @@ def main():
         return
 
     # 2. Select Targets
-    target_stocks = WATCHLIST[:5] # Process top 5 for demo
+    target_stocks = WATCHLIST
     logger.info(f"Processing stocks: {target_stocks}")
 
     # 3. Initialize Components

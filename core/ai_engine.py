@@ -71,6 +71,11 @@ class AIEngine:
         
         Task:
         1. Validate the setup. 
+           - If "BSJP (Overnight Gap)":
+             * This is a "Buy Sore Jual Pagi" strategy (Buy Close, Sell Open).
+             * Verify strong closing momentum.
+             * IGNORE high RSI (it MUST be high for this strat).
+             * Plan MUST target selling tomorrow morning.
            - If "Volatility Breakout": 
              * ACCEPT the trade even if it looks risky/overbought, UNLESS it is essentially a guaranteed loss (e.g. falling knife).
              * If risky, set Valid=True but include "WARNING: High Risk" in the analysis.
@@ -79,9 +84,12 @@ class AIEngine:
         2. If Valid == true, provide a Trade Plan.
            - Entry: Current Close
            - Stop Loss: 
+             * For BSJP: -2% to -3% hard stop.
              * For Breakouts: TIGHT SL (e.g., Low of Day or -3% from entry).
              * For Swing: ATR-based (2x ATR).
-           - Take Profit: 1:2 Risk-Reward minimum.
+           - Take Profit: 
+             * For BSJP: "OPEN PRICE NEXT DAY" (approx +3% target).
+             * Others: 1:2 Risk-Reward minimum.
         
         Output JSON Format ONLY:
         {{

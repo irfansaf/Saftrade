@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Optional, List
+from sqlalchemy import BigInteger, Column
 from sqlmodel import Field, SQLModel, create_engine, Session, select
 from config.settings import SQLITE_URL
 
@@ -15,7 +16,7 @@ class DailyCandle(SQLModel, table=True):
     high: float
     low: float
     close: float
-    volume: int
+    volume: int = Field(sa_column=Column(BigInteger))
     
     change: Optional[float] = None
     change_pct: Optional[float] = None
@@ -56,15 +57,20 @@ class DBManager:
             result = session.exec(statement).first()
             return result
 
-    def get_history(self, symbol: str, limit: int = 200) -> List[DailyCandle]:
+    def get_history(self, symbol: str, limit: int = 365) -> List[DailyCandle]:
+        """
+        Fetch the last 'limit' candles for a symbol, sorted by date ASC.
+        Optimized: Fetch last N descending, then reverse in Python.
+        """
         with Session(self.engine) as session:
-            statement = select(DailyCandle).where(DailyCandle.symbol == symbol).order_by(DailyCandle.date.asc())
-            # Note: We order distinctively. To get last 200, we might need to sort desc then reverse, 
-            # or just get all and slice if dataset is small (1 year is ~250 rows).
-            # Let's just return all for now or modify query if limit is strict.
-            # Efficient way for last N:
-            # select * from (select * from table order by date desc limit N) order by date asc
-            
-            # For this MVP, let's just fetch tailored to the strategy needs
+            # Fetch latest N candles (Date DESC)
+            statement = (
+                select(DailyCandle)
+                .where(DailyCandle.symbol == symbol)
+                .order_by(DailyCandle.date.desc())
+                .limit(limit)
+            )
             results = session.exec(statement).all()
-            return list(results) # Convert to list
+            
+            # Reverse to get Chronological Order (Oldest -> Newest) for Pandas
+            return list(reversed(results))
