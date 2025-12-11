@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "saftrade"
+version = "0.1.0"
+description = "Saftrade: Automated Stock Trading Bot"
+authors = ["Irfan Saf <irfansaf7@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+requests = "^2.31.0"
+pandas = "^2.2.0"
+pydantic = "^2.6.0"
+python-dotenv = "^1.0.1"
+sqlmodel = "^0.0.16"
+yfinance = "^0.2.36"
+pandas-ta = "^0.4.71b0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
